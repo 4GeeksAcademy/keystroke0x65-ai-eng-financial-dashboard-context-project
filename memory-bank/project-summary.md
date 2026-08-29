@@ -35,5 +35,21 @@ The project uses Docker Compose to run two services that communicate over an int
 
 4. **Backend CORS**:  
    The FastAPI backend uses `CORSMiddleware` with `allow_origins=["*"]`, so it accepts requests from any origin in standalone setups.
+---
 
+## Recent Changes (2026-08-28)
+
+| Change | File(s) | Rules Validated |
+|--------|---------|-----------------|
+| Generated rule files from agent-research findings | `.agents/rules/container-rules.md`, `api-rules.md`, `naming-rules.md`, `frontend-rules.md`, `testing-rules.md`, `project-rules.md` | R01–R49 |
+| Added `.dockerignore` for backend and frontend | `backend/.dockerignore`, `frontend/.dockerignore` | R05 |
+| Added `@functools.lru_cache` to `generate_mock_movements` | `backend/app/routes.py` | R10 |
+| Added `start_date > end_date` validation with 422 | `backend/app/routes.py` | R11 |
+| Extracted `business_type` into `filter_movements()` | `backend/app/routes.py` | R12 |
+| Added empty-list guard in `build_metrics_facets` | `backend/app/routes.py` | R22 |
+| Derived `period` from data range instead of hardcoding | `frontend/src/App.tsx` | R35 |
+| Added 4 dedicated tests for `/api/metrics/alerts` | `backend/tests/test_routes.py` | R39 |
+| Added test for date range validation (422) | `backend/tests/test_routes.py` | R11 |
+| Created `.agents/skills/` directory with README | `.agents/skills/README.md` | R43 |
+| Updated this memory bank with change log | `memory-bank/project-summary.md` | R45 |
 

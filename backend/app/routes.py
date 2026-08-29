@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+import functools
 import random
 from collections import defaultdict
 from datetime import date, timedelta
 from typing import Literal
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 
 OperationType = Literal["income", "outcome"]
@@ -91,6 +92,7 @@ def _build_movement(month: int, income_probability: float, today: date) -> Finan
     )
 
 
+@functools.lru_cache(maxsize=1)
 def generate_mock_movements(seed: int | None = None) -> list[FinancialMovement]:
     if seed is not None:
         random.seed(seed)
@@ -111,6 +113,12 @@ def filter_movements_by_date(
 ) -> list[FinancialMovement]:
     if start_date is None and end_date is None:
         return movements
+
+    if start_date is not None and end_date is not None and start_date > end_date:
+        raise HTTPException(
+            status_code=422,
+            detail=f"start_date ({start_date}) must be before or equal to end_date ({end_date})",
+        )
 
     filtered = movements
     if start_date is not None:
@@ -149,6 +157,11 @@ def ensure_chronological_order(movements: list[FinancialMovement]) -> list[Finan
 
 def build_metrics_facets(movements: list[FinancialMovement]) -> MetricsFacets:
     ordered = ensure_chronological_order(movements)
+    if not ordered:
+        raise HTTPException(
+            status_code=404,
+            detail="No movements available to build facets",
+        )
     return MetricsFacets(
         operation_types=sorted({item.operation_type for item in ordered}),
         business_types=sorted({item.business_type for item in ordered}),

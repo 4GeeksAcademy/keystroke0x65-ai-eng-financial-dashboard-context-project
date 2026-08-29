@@ -1,0 +1,12 @@
+.git/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+tests/
+.gitignore
+*.md
+.env
+.env.local
+Dockerfile
+requirements.txt

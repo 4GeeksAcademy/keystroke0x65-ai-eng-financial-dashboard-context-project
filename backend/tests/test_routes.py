@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 
 from fastapi.testclient import TestClient
 
@@ -24,6 +24,28 @@ def test_filter_movements_by_date_includes_range_edges():
 
     assert filtered
     assert all(movement.create_date == target_date for movement in filtered)
+
+
+def test_filter_movements_rejects_invalid_date_range():
+    """R11: Must reject start_date > end_date with 422."""
+    movements = generate_mock_movements(seed=42)
+    start = date(2024, 6, 1)
+    end = date(2024, 5, 1)
+
+    from fastapi import HTTPException
+    import pytest
+    with pytest.raises(HTTPException) as exc_info:
+        filter_movements_by_date(movements, start, end)
+    assert exc_info.value.status_code == 422
+
+
+def test_filter_movements_by_date_api_rejects_inverted_dates():
+    """R11: API-level test for inverted date range."""
+    response = client.get(
+        "/api/metrics",
+        params={"start_date": "2024-06-01", "end_date": "2024-01-01"},
+    )
+    assert response.status_code == 422
 
 
 def test_health_endpoint_returns_ok():
@@ -187,3 +209,39 @@ def test_metrics_alerts_returns_anomaly_candidates():
             "baseline_average",
             "increase_ratio",
         }
+
+
+def test_metrics_alerts_high_threshold_returns_no_alerts():
+    """R39: Alerts endpoint with high threshold should produce empty list."""
+    response = client.get(
+        "/api/metrics/alerts",
+        params={"threshold": 10.0, "group_by": "month"},
+    )
+
+    assert response.status_code == 200
+    assert response.json() == []
+
+
+def test_metrics_alerts_zero_threshold_detects_change():
+    """R39: Zero threshold detects any increase from baseline."""
+    response = client.get(
+        "/api/metrics/alerts",
+        params={"threshold": 0.0, "group_by": "month"},
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert isinstance(payload, list)
+    assert all(item["increase_ratio"] >= 0 for item in payload)
+
+
+def test_metrics_alerts_filters_by_business_type():
+    """R39: Alerts endpoint respects business_type filter."""
+    response = client.get(
+        "/api/metrics/alerts",
+        params={"threshold": 0.0, "group_by": "month", "business_type": "B2C"},
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert isinstance(payload, list)
