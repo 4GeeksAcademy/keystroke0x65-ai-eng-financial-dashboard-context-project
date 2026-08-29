@@ -91,3 +91,16 @@
 **Issue:** Not sure if having so many rules for financial dashboard is a bad thing. 
 
 ---
+
+## Phase 4
+
+**Prompt:** 
+> task: make sure there is a file in memory bank folder titled project-status.md. then add the current status of the project.
+> goal: make sure it contains what works, known gaps, next priorities, incorrect steps if any were taken. 
+> constraint: do not make things up. if you need additional information about what was done use git log
+
+**Result:** The AI ran some commands then wrote a project-status.md file 
+
+**Issue:**  
+
+---
