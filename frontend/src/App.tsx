@@ -1,30 +1,51 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, lazy, Suspense } from "react";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { KPIRow } from "@/components/dashboard/kpi-row";
-import { IncomeOutcomeChart } from "@/components/dashboard/income-outcome-chart";
-import { ProfitPercentChart } from "@/components/dashboard/profit-percent-chart";
 import {
   type FinancialMovement,
-  type KPIMetrics,
-  type MonthlyDataPoint,
 } from "@/lib/financial-types";
 import { computeKPIs, computeMonthlyData } from "@/lib/financial-utils";
 
+const IncomeOutcomeChart = lazy(() =>
+  import('@/components/dashboard/income-outcome-chart').then((m) => ({
+    default: m.IncomeOutcomeChart,
+  }))
+)
+
+const ProfitPercentChart = lazy(() =>
+  import('@/components/dashboard/profit-percent-chart').then((m) => ({
+    default: m.ProfitPercentChart,
+  }))
+)
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
 
+let fetchPromise: Promise<FinancialMovement[]> | null = null;
+
 async function fetchFinancialData(): Promise<FinancialMovement[]> {
-  const response = await fetch(`${API_BASE_URL}/api/metrics`);
-  if (!response.ok) {
-    throw new Error(`Failed to fetch financial data: ${response.status}`);
+  if (!fetchPromise) {
+    fetchPromise = (async () => {
+      const response = await fetch(`${API_BASE_URL}/api/metrics`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch financial data: ${response.status}`);
+      }
+      return response.json();
+    })();
   }
-  return response.json();
+  return fetchPromise;
 }
 
 function derivePeriod(movements: FinancialMovement[]): string {
   if (movements.length === 0) return "No data";
-  const dates = movements.map((m) => new Date(m.create_date));
-  const min = new Date(Math.min(...dates.map((d) => d.getTime())));
-  const max = new Date(Math.max(...dates.map((d) => d.getTime())));
+  let minTime = Infinity;
+  let maxTime = -Infinity;
+  for (const m of movements) {
+    const time = new Date(m.create_date).getTime();
+    if (time < minTime) minTime = time;
+    if (time > maxTime) maxTime = time;
+  }
+  const min = new Date(minTime);
+  const max = new Date(maxTime);
   const minYear = min.getFullYear();
   const maxYear = max.getFullYear();
   if (minYear === maxYear) {
@@ -35,19 +56,13 @@ function derivePeriod(movements: FinancialMovement[]): string {
 }
 
 function App() {
-  const [metrics, setMetrics] = useState<KPIMetrics | null>(null);
-  const [monthlyData, setMonthlyData] = useState<MonthlyDataPoint[]>([]);
+  const [movements, setMovements] = useState<FinancialMovement[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [period, setPeriod] = useState<string>("");
 
   useEffect(() => {
     fetchFinancialData()
-      .then((movements) => {
-        setMetrics(computeKPIs(movements));
-        setMonthlyData(computeMonthlyData(movements));
-        setPeriod(derivePeriod(movements));
-      })
+      .then(setMovements)
       .catch(() => {
         setError(
           "No se pudo cargar la informacion financiera. Revisa la API de backend.",
@@ -57,6 +72,10 @@ function App() {
         setLoading(false);
       });
   }, []);
+
+  const metrics = useMemo(() => movements ? computeKPIs(movements) : null, [movements]);
+  const monthlyData = useMemo(() => movements ? computeMonthlyData(movements) : [], [movements]);
+  const period = useMemo(() => movements ? derivePeriod(movements) : "", [movements]);
 
   return (
     <main className="dark min-h-screen bg-background text-foreground">
@@ -83,8 +102,12 @@ function App() {
             aria-label="Financial charts"
             className="grid grid-cols-1 gap-4 xl:grid-cols-2"
           >
-            <IncomeOutcomeChart data={monthlyData} loading={loading} />
-            <ProfitPercentChart data={monthlyData} loading={loading} />
+            <Suspense fallback={<div className="h-[280px] rounded-lg bg-accent animate-pulse" />}>
+              <IncomeOutcomeChart data={monthlyData} loading={loading} />
+            </Suspense>
+            <Suspense fallback={<div className="h-[280px] rounded-lg bg-accent animate-pulse" />}>
+              <ProfitPercentChart data={monthlyData} loading={loading} />
+            </Suspense>
           </section>
         </div>
       </div>

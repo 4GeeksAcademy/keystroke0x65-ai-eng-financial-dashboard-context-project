@@ -1,4 +1,4 @@
-import { LayoutDashboard } from 'lucide-react'
+import LayoutDashboard from 'lucide-react/dist/esm/icons/layout-dashboard'
 
 interface DashboardHeaderProps {
   period?: string

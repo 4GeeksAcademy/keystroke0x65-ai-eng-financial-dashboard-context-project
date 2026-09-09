@@ -1,7 +1,10 @@
 import { KPICard } from './kpi-card'
 import { type KPIMetrics } from '@/lib/financial-types'
 import { formatCurrency, formatPercent } from '@/lib/financial-utils'
-import { TrendingUp, TrendingDown, DollarSign, BarChart2 } from 'lucide-react'
+import TrendingUp from 'lucide-react/dist/esm/icons/trending-up'
+import TrendingDown from 'lucide-react/dist/esm/icons/trending-down'
+import DollarSign from 'lucide-react/dist/esm/icons/dollar-sign'
+import BarChart2 from 'lucide-react/dist/esm/icons/bar-chart-2'
 
 interface KPIRowProps {
   metrics: KPIMetrics | null
