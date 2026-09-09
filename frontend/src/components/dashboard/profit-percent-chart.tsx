@@ -72,11 +72,12 @@ export function ProfitPercentChart({ data, loading }: ProfitPercentChartProps) {
       </CardHeader>
       <CardContent>
         {!hasData ? (
-          <div className="flex h-[280px] items-center justify-center text-muted-foreground text-sm">
+          <div role="status" className="flex h-[280px] items-center justify-center text-muted-foreground text-sm">
             No data available to display
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height={280}>
+          <>
+          <ResponsiveContainer width="100%" height={280} role="img" aria-label="Line chart showing monthly profit margin percentage">
             <LineChart data={data} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" strokeOpacity={0.6} />
               <XAxis
@@ -106,6 +107,17 @@ export function ProfitPercentChart({ data, loading }: ProfitPercentChartProps) {
               />
             </LineChart>
           </ResponsiveContainer>
+          <div className="sr-only" role="table" aria-label="Monthly profit margin data">
+            <div role="rowgroup">
+              {data.map((d) => (
+                <div role="row" key={d.month}>
+                  <span role="cell">{d.month}</span>
+                  <span role="cell">{d.profitPercent.toFixed(1)}% profit margin</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          </>
         )}
       </CardContent>
     </Card>
