@@ -53,3 +53,9 @@ The project uses Docker Compose to run two services that communicate over an int
 | Created `.agents/skills/` directory with README | `.agents/skills/README.md` | R43 |
 | Updated this memory bank with change log | `memory-bank/project-summary.md` | R45 |
 
+## Recent Changes (2026-09-09)
+
+| Change | File(s) | Reason |
+|--------|---------|--------|
+| Added `react-testing` skill from `affaan-m/ecc` | `skills-lock.json` | Enables agent-guided React component render verification — so that dashboard components (`KPIRow`, `IncomeOutcomeChart`, `ProfitPercentChart`, `DashboardHeader`, `KPICard`) can be tested for correct rendering, covering the existing gap of zero component-level tests |
+

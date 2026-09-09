@@ -14,7 +14,7 @@
   --secondary: oklch(0.93 0.01 240);
   --secondary-foreground: oklch(0.2 0.01 240);
   --muted: oklch(0.93 0.01 240);
-  --muted-foreground: oklch(0.5 0.01 240);
+  --muted-foreground: oklch(0.42 0.01 240);
   --accent: oklch(0.93 0.01 240);
   --accent-foreground: oklch(0.2 0.01 240);
   --destructive: oklch(0.577 0.245 27.325);
@@ -22,9 +22,9 @@
   --border: oklch(0.88 0.01 240);
   --input: oklch(0.88 0.01 240);
   --ring: oklch(0.55 0.2 255);
-  --chart-income: oklch(0.55 0.2 255);
-  --chart-outcome: oklch(0.65 0.18 30);
-  --chart-profit: oklch(0.6 0.16 160);
+  --chart-income: oklch(0.45 0.2 255);
+  --chart-outcome: oklch(0.5 0.18 30);
+  --chart-profit: oklch(0.48 0.16 160);
   --chart-1: oklch(0.55 0.2 255);
   --chart-2: oklch(0.65 0.18 30);
   --chart-3: oklch(0.6 0.16 160);
@@ -122,4 +122,41 @@ html,
 body,
 #root {
   min-height: 100%;
+}
+
+/* Accessibility */
+
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: #000;
+  color: #fff;
+  padding: 8px 16px;
+  z-index: 100;
+  font-size: 0.875rem;
+  text-decoration: none;
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+section:focus {
+  scroll-margin-top: 80px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
